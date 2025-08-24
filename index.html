@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resenhas And Falcatruas</title>
     <style>
+        /* Estilos CSS (inalterados para manter o layout) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: Arial, sans-serif; 
@@ -121,6 +122,10 @@
             border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.3s;
+        }
+        .input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
         }
         .input:focus {
             outline: none;
@@ -334,3 +339,530 @@
             display: none;
         }
         .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .message.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        /* Novo Estilo para o Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+            animation-name: animatetop;
+            animation-duration: 0.4s;
+        }
+        @keyframes animatetop {
+            from { top: -300px; opacity: 0; }
+            to { top: 0; opacity: 1; }
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .cards {
+                grid-template-columns: 1fr;
+            }
+            .card-buttons {
+                flex-direction: column;
+            }
+            .card-btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            Resenhas And Falcatruas
+            <span class="badge" id="status-badge">🔄 CONECTANDO</span>
+        </div>
+        <div>
+            <button class="nav-btn active" onclick="app.ui.showPage('apostas')">Apostas</button>
+            <button class="nav-btn" onclick="app.ui.showPage('regras')">Regras</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="message success" id="success-msg"></div>
+        <div class="message error" id="error-msg"></div>
+        <div class="message warning" id="warning-msg"></div>
+
+        <div id="apostas">
+            <div class="success-box" id="main-status">
+                <h3>🎉 Sistema Carregado!</h3>
+                <p>Conectado ao Firebase. Todas as alterações serão salvas automaticamente.</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="total-apostas">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="apostas-ativas">0</span>
+                    <span class="stat-label">Ativas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="apostas-encerradas">0</span>
+                    <span class="stat-label">Encerradas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="valor-total">R$ 0</span>
+                    <span class="stat-label">Valor Total</span>
+                </div>
+            </div>
+
+            <div class="form-box">
+                <h2>➕ Nova Aposta</h2>
+                <div class="form-row">
+                    <input class="input" placeholder="Apostador 1*" id="ap1">
+                    <input class="input" placeholder="Apostador 2*" id="ap2">
+                    <input class="input" placeholder="Descrição*" id="desc">
+                    <input class="input" placeholder="Valor*" id="val">
+                    <input class="input" placeholder="Observações" id="obs">
+                </div>
+                <button class="btn" onclick="app.bets.createBet()">✅ Adicionar Aposta</button>
+            </div>
+            
+            <div class="filters">
+                <button class="filter-btn active" onclick="app.ui.filter('todas')" id="filter-todas">Todas</button>
+                <button class="filter-btn" onclick="app.ui.filter('ativas')" id="filter-ativas">Ativas</button>
+                <button class="filter-btn" onclick="app.ui.filter('encerradas')" id="filter-encerradas">Encerradas</button>
+            </div>
+
+            <div class="cards" id="lista-apostas">
+                <div class="loading">Carregando apostas...</div>
+            </div>
+        </div>
+
+        <div id="regras" class="hidden">
+            <div class="rules-box">
+                <h2 style="text-align: center; color: #dc2626;">📋 Regras das Apostas</h2>
+                <div class="rule">
+                    <strong>REGRA 1:</strong> Presepou pra pagar é o dobro, remoção do grupo por tempo indeterminado e volta mediante ao conselho da verdade.
+                </div>
+                <div class="rule">
+                    <strong>REGRA 2:</strong> Caso um dos lados queira cancelar a aposta terá que pagar o cashout para o adversário.
+                </div>
+                <div class="rule">
+                    <strong>REGRA 3:</strong> Apostas encerradas ficam salvas no histórico para consulta, mas não podem ser modificadas.
+                </div>
+                <div class="rule">
+                    <strong>REGRA 4:</strong> Apenas o administrador pode definir o vencedor de uma aposta ativa.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="app.ui.hideModal()">&times;</span>
+            <p id="modalMessage"></p>
+            <button class="btn btn-danger" id="modalConfirmBtn">Confirmar</button>
+            <button class="btn btn-info" onclick="app.ui.hideModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-database-compat.min.js"></script>
+
+    <script>
+        // Objeto global da aplicação
+        const app = {};
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxYWK7bLY9gjpMZbC8O6vwZp0VGPFIFfU",
+            authDomain: "resenha-and-falcatruas.firebaseapp.com",
+            databaseURL: "https://resenha-and-falcatruas-default-rtdb.firebaseio.com",
+            projectId: "resenha-and-falcatruas",
+            storageBucket: "resenha-and-falcatruas.firebasestorage.app",
+            messagingSenderId: "865007454734",
+            appId: "1:865007454734:web:7e22573f904d4b68744a5f",
+            measurementId: "G-NHJGPF5T83"
+        };
+        
+        // Dados iniciais (usados se o Firebase estiver vazio)
+        const initialBets = [
+            { 
+                id: 1, 
+                ap1: "Cabral", 
+                ap2: "Islan", 
+                desc: "Quem chega com a melhor carcaça no São Pedro", 
+                val: "100,00", 
+                obs: "", 
+                status: "ativa", 
+                data: "2024-01-15", 
+                vencedor: null 
+            },
+            { 
+                id: 2, 
+                ap1: "Thiago", 
+                ap2: "Cabral", 
+                desc: "Cartola", 
+                val: "100,00 (por turno)", 
+                obs: "", 
+                status: "ativa", 
+                data: "2024-01-16", 
+                vencedor: null 
+            },
+            { 
+                id: 3, 
+                ap1: "Thiago (Flamengo)", 
+                ap2: "Dinho (São Paulo)", 
+                desc: "Quem ganha ou chega mais longe nas competições", 
+                val: "50,00 (por competição)", 
+                obs: "", 
+                status: "ativa", 
+                data: "2024-01-17", 
+                vencedor: null 
+            },
+            { 
+                id: 4, 
+                ap1: "Alisson (Flamengo)", 
+                ap2: "Islan (São Paulo)", 
+                desc: "Quem fica na frente no Brasileirão", 
+                val: "100,00", 
+                obs: "", 
+                status: "encerrada", 
+                data: "2024-01-10", 
+                vencedor: "Alisson (Flamengo)" 
+            },
+            { 
+                id: 5, 
+                ap1: "Cleiton", 
+                ap2: "Cabral", 
+                desc: "Gabigordo não faz 25 gols na temporada", 
+                val: "100,00", 
+                obs: "Aposta sobre desempenho do Gabigol", 
+                status: "encerrada", 
+                data: "2024-01-08", 
+                vencedor: "Cleiton" 
+            }
+        ];
+
+        // Módulo de Gerenciamento de Estado
+        app.state = {
+            bets: [],
+            currentFilter: 'todas',
+            database: null,
+        };
+
+        // Módulo de Utilidades
+        app.utils = {
+            generateId: () => Date.now() + Math.floor(Math.random() * 1000),
+            todayDate: () => new Date().toLocaleDateString('pt-BR'),
+            sanitizeInput: (input) => input.replace(/'/g, '&#39;'),
+        };
+
+        // Módulo de UI (Interface do Usuário)
+        app.ui = {
+            showMessage: (text, type = 'success') => {
+                const elements = {
+                    'success': document.getElementById('success-msg'),
+                    'error': document.getElementById('error-msg'),
+                    'warning': document.getElementById('warning-msg')
+                };
+                Object.values(elements).forEach(el => el.style.display = 'none');
+                
+                const element = elements[type];
+                element.textContent = text;
+                element.style.display = 'block';
+                
+                setTimeout(() => element.style.display = 'none', 5000);
+            },
+            updateStatus: (text, type = 'online') => {
+                const badge = document.getElementById('status-badge');
+                const config = {
+                    'online': { class: '', text: '✅ ONLINE' },
+                    'error': { class: 'error', text: '❌ ERRO' },
+                    'connecting': { class: 'offline', text: '🔄 CONECTANDO' }
+                }[type] || { class: '', text: '✅ ONLINE' };
+                
+                badge.className = `badge ${config.class}`;
+                badge.textContent = config.text;
+                
+                const statusInfo = document.getElementById('main-status').querySelector('p');
+                statusInfo.innerHTML = text;
+            },
+            showPage: (page) => {
+                const pages = ['apostas', 'regras'];
+                const navButtons = document.querySelectorAll('.nav-btn');
+                
+                pages.forEach(p => document.getElementById(p)?.classList.add('hidden'));
+                document.getElementById(page)?.classList.remove('hidden');
+                
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                const activeIndex = pages.indexOf(page);
+                if (navButtons[activeIndex]) {
+                    navButtons[activeIndex].classList.add('active');
+                }
+            },
+            filter: (type) => {
+                app.state.currentFilter = type;
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(`filter-${type}`).classList.add('active');
+                app.ui.renderBets();
+            },
+            renderBets: () => {
+                const container = document.getElementById('lista-apostas');
+                const filteredBets = app.state.bets.filter(b => 
+                    app.state.currentFilter === 'todas' || b.status === app.state.currentFilter
+                );
+                
+                if (filteredBets.length === 0) {
+                    container.innerHTML = `<div class="loading">Nenhuma aposta ${app.state.currentFilter === 'todas' ? 'encontrada' : app.state.currentFilter}.</div>`;
+                    app.ui.updateStats();
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                filteredBets.forEach(bet => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = `card ${bet.status}`;
+                    
+                    const ap1Safe = app.utils.sanitizeInput(bet.ap1);
+                    const ap2Safe = app.utils.sanitizeInput(bet.ap2);
+                    
+                    cardDiv.innerHTML = `
+                        <div class="status-badge status-${bet.status}">
+                            ${bet.status === 'ativa' ? 'Ativa' : 'Encerrada'}
+                        </div>
+                        <div class="card-title">${bet.ap1} <span class="vs">vs</span> ${bet.ap2}</div>
+                        <div class="card-desc">${bet.desc}</div>
+                        <div class="card-value">💰 R$ ${bet.val}</div>
+                        ${bet.obs ? `<div class="card-obs">📝 ${bet.obs}</div>` : ''}
+                        ${bet.vencedor ? `<div class="card-obs" style="color: #10b981; font-weight: bold;">🏆 Vencedor: ${bet.vencedor}</div>` : ''}
+                        <small style="color: #999; display: block; margin-bottom: 15px;">📅 Criada em: ${bet.data}</small>
+                        <div class="card-buttons">
+                            ${bet.status === 'ativa' ? `
+                                <button class="card-btn btn-success" onclick="app.bets.endBet(${bet.id}, '${ap1Safe}')">
+                                    🏆 ${bet.ap1}
+                                </button>
+                                <button class="card-btn btn-success" onclick="app.bets.endBet(${bet.id}, '${ap2Safe}')">
+                                    🏆 ${bet.ap2}
+                                </button>
+                            ` : ''}
+                            <button class="card-btn btn-danger" onclick="app.bets.deleteBet(${bet.id})">
+                                🗑️ Excluir
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(cardDiv);
+                });
+                app.ui.updateStats();
+            },
+            updateStats: () => {
+                const total = app.state.bets.length;
+                const ativas = app.state.bets.filter(b => b.status === 'ativa').length;
+                const encerradas = app.state.bets.filter(b => b.status === 'encerrada').length;
+                
+                const valorTotal = app.state.bets.reduce((acc, bet) => {
+                    const nums = bet.val.match(/[\d,]+/);
+                    if (nums) {
+                        const valor = parseFloat(nums[0].replace(',', '.'));
+                        return acc + valor;
+                    }
+                    return acc;
+                }, 0);
+                
+                document.getElementById('total-apostas').textContent = total;
+                document.getElementById('apostas-ativas').textContent = ativas;
+                document.getElementById('apostas-encerradas').textContent = encerradas;
+                document.getElementById('valor-total').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+            },
+            showModal: (message, onConfirm) => {
+                const modal = document.getElementById('confirmModal');
+                const modalMessage = document.getElementById('modalMessage');
+                const confirmBtn = document.getElementById('modalConfirmBtn');
+                
+                modalMessage.textContent = message;
+                confirmBtn.onclick = () => {
+                    onConfirm();
+                    app.ui.hideModal();
+                };
+                modal.style.display = 'block';
+            },
+            hideModal: () => {
+                document.getElementById('confirmModal').style.display = 'none';
+            },
+        };
+
+        // Módulo Firebase
+        app.firebase = {
+            initialize: () => {
+                try {
+                    if (firebase.apps.length === 0) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    app.state.database = firebase.database();
+                    app.firebase.loadData();
+
+                    app.state.database.ref('apostas').on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        app.state.bets = data ? data : [];
+                        app.ui.renderBets();
+                        console.log("Dados atualizados em tempo real.");
+                    });
+                } catch (error) {
+                    console.error('Erro ao inicializar Firebase:', error);
+                    app.ui.showMessage('❌ Erro de conexão com o Firebase!', 'error');
+                    app.ui.updateStatus('Erro de conexão. Verifique sua rede e a configuração do Firebase.', 'error');
+                }
+            },
+            loadData: () => {
+                app.ui.updateStatus('Carregando dados do Firebase...', 'connecting');
+                app.state.database.ref('apostas').once('value')
+                    .then((snapshot) => {
+                        const data = snapshot.val();
+                        if (data && Array.isArray(data) && data.length > 0) {
+                            app.state.bets = data;
+                            app.ui.updateStatus('Conexão estabelecida com sucesso. Dados carregados.', 'online');
+                        } else {
+                            app.state.bets = [...initialBets];
+                            app.ui.updateStatus('Conexão estabelecida. Base de dados vazia, usando dados padrão.', 'online');
+                            app.firebase.sync();
+                        }
+                        app.ui.renderBets();
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao carregar dados:', error);
+                        app.ui.showMessage('❌ Erro ao carregar dados do Firebase!', 'error');
+                        app.ui.updateStatus('Erro ao carregar dados. Verifique o console para mais detalhes.', 'error');
+                    });
+            },
+            sync: () => {
+                if (!app.state.database) {
+                    app.ui.showMessage('❌ Erro de conexão com o Firebase!', 'error');
+                    return;
+                }
+                app.ui.updateStatus('Sincronizando dados com o Firebase...', 'connecting');
+                app.state.database.ref('apostas').set(app.state.bets)
+                    .then(() => {
+                        app.ui.showMessage('💾 Dados sincronizados com sucesso!', 'success');
+                        app.ui.updateStatus('Conectado ao Firebase. Todas as alterações serão salvas automaticamente.', 'online');
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao sincronizar:', error);
+                        app.ui.showMessage('❌ Erro na sincronização: ' + error.message, 'error');
+                        app.ui.updateStatus('Erro na sincronização.', 'error');
+                    });
+            },
+        };
+
+        // Módulo de Apostas
+        app.bets = {
+            createBet: () => {
+                const ap1 = document.getElementById('ap1').value.trim();
+                const ap2 = document.getElementById('ap2').value.trim();
+                const desc = document.getElementById('desc').value.trim();
+                const val = document.getElementById('val').value.trim();
+                const obs = document.getElementById('obs').value.trim();
+                
+                const requiredInputs = [ap1, ap2, desc, val];
+                const inputElements = [document.getElementById('ap1'), document.getElementById('ap2'), document.getElementById('desc'), document.getElementById('val')];
+                
+                let valid = true;
+                requiredInputs.forEach((input, index) => {
+                    if (!input) {
+                        inputElements[index].classList.add('error');
+                        valid = false;
+                    } else {
+                        inputElements[index].classList.remove('error');
+                    }
+                });
+                
+                if (!valid) {
+                    app.ui.showMessage('❌ Preencha todos os campos obrigatórios (*)!', 'error');
+                    return;
+                }
+                
+                const newBet = {
+                    id: app.utils.generateId(),
+                    ap1: ap1,
+                    ap2: ap2,
+                    desc: desc,
+                    val: val,
+                    obs: obs,
+                    status: 'ativa',
+                    data: app.utils.todayDate(),
+                    vencedor: null
+                };
+                
+                app.state.bets.unshift(newBet);
+                app.firebase.sync();
+                
+                inputElements.forEach(el => el.value = '');
+                document.getElementById('obs').value = '';
+                
+                app.ui.showMessage('✅ Aposta criada com sucesso!', 'success');
+            },
+            endBet: (id, winner) => {
+                app.ui.showModal(`Confirma "${winner}" como vencedor desta aposta?`, () => {
+                    const bet = app.state.bets.find(b => b.id === id);
+                    if (bet) {
+                        bet.status = 'encerrada';
+                        bet.vencedor = winner;
+                        app.firebase.sync();
+                        app.ui.showMessage(`🏆 ${winner} foi declarado vencedor!`, 'success');
+                    }
+                });
+            },
+            deleteBet: (id) => {
+                app.ui.showModal('Tem certeza que deseja excluir esta aposta permanentemente?', () => {
+                    app.state.bets = app.state.bets.filter(b => b.id !== id);
+                    app.firebase.sync();
+                    app.ui.showMessage('🗑️ Aposta excluída com sucesso!', 'success');
+                });
+            },
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', app.firebase.initialize);
+    </script>
+</body>
