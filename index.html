@@ -584,19 +584,21 @@
         });
     </script>
 </body>
-</html> CONFIGURAÇÃO FIREBASE (JÁ INTEGRADA) =====
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxYWK7bLY9gjpMZbC8O6vwZp0VGPFIFfU",
-            authDomain: "resenha-and-falcatruas.firebaseapp.com",
-            databaseURL: "https://resenha-and-falcatruas-default-rtdb.firebaseio.com",
-            projectId: "resenha-and-falcatruas",
-            storageBucket: "resenha-and-falcatruas.firebasestorage.app",
-            messagingSenderId: "865007454734",
-            appId: "1:865007454734:web:7e22573f904d4b68744a5f",
-            measurementId: "G-NHJGPF5T83"
-        };
+</html> <script>
+// CONFIGURAÇÃO FIREBASE (JÁ INTEGRADA)
+const firebaseConfig = {
+    apiKey: "AIzaSyBxYWK7bLY9gjpMZbC8O6vwZp0VGPFIFfU",
+    authDomain: "resenha-and-falcatruas.firebaseapp.com",
+    databaseURL: "https://resenha-and-falcatruas-default-rtdb.firebaseio.com",
+    projectId: "resenha-and-falcatruas",
+    storageBucket: "resenha-and-falcatruas.firebasestorage.app",
+    messagingSenderId: "865007454734",
+    appId: "1:865007454734:web:7e22573f904d4b68744a5f",
+    measurementId: "G-NHJGPF5T83"
+};
 
-        // ===== VARIÁVEIS GLOBAIS =====
+// =====
+ VARIÁVEIS GLOBAIS =====
         let apostas = [];
         let filtroAtual = 'todas';
         let database = null;
@@ -631,41 +633,14 @@
         }
 
         function atualizarStatus(texto, tipo = 'online') {
-    const badge = document.getElementById('status-badge');
-    const statusInfo = document.getElementById('storage-info');
-    const mainStatus = document.getElementById('main-status');
-    
-    const configs = {
-        'online': {
-            badge: { class: '', text: '✅ ONLINE' },
-            box: { titulo: '🎉 Sistema Conectado!', desc: 'Dados sincronizados em tempo real com Firebase', classe: 'success-box' }
-        },
-        'connecting': {
-            badge: { class: 'offline', text: '🔄 CONECTANDO' },
-            box: { titulo: '🔄 Conectando...', desc: 'Estabelecendo conexão com Firebase', classe: 'success-box' }
-        },
-        'error': {
-            badge: { class: 'error', text: '❌ OFFLINE' },
-            box: { titulo: '❌ Erro de Conexão', desc: 'Problemas na conexão com Firebase. Verifique sua internet.', classe: 'success-box' }
-        }
-    };
-    
-    const config = configs[tipo] || configs.online;
-    
-    // Atualizar badge
-    badge.className = `badge ${config.badge.class}`;
-    badge.textContent = config.badge.text;
-    
-    // Atualizar status detalhado
-    statusInfo.innerHTML = `<strong>Status:</strong> ${texto}`;
-    
-    // Atualizar caixa principal (sem criar div extra indesejada)
-    mainStatus.className = config.box.classe;
-    mainStatus.innerHTML = `
-        <h3>${config.box.titulo}</h3>
-        <p>${config.box.desc}</p>
-    `;
-}
+            const badge = document.getElementById('status-badge');
+            const statusInfo = document.getElementById('storage-info');
+            const mainStatus = document.getElementById('main-status');
+            
+            const configs = {
+                'online': {
+                    badge: { class: '', text: '✅ ONLINE' },
+                    box: { class: 'success-box', titulo: '🎉 Sistema Conectado!', desc: 'Dados sincronizados em tempo real com Firebase' }
                 },
                 'connecting': {
                     badge: { class: 'offline', text: '🔄 CONECTANDO' },
@@ -960,3 +935,4 @@
         }
 
         // =====
+</script>
