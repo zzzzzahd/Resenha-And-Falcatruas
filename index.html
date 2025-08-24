@@ -63,27 +63,6 @@
             margin: 0 auto; 
             padding: 20px; 
         }
-        .success-box {
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-            border: 2px solid #10b981;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            animation: fadeIn 1s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .success-box h3 {
-            color: #065f46;
-            margin-bottom: 8px;
-        }
-        .success-box p {
-            color: #047857;
-            font-weight: 500;
-        }
         .config-box {
             background: #fef3c7;
             border: 2px solid #f59e0b;
@@ -177,25 +156,6 @@
         .stat-label {
             font-size: 14px;
             opacity: 0.9;
-        }
-        
-        .backup-section {
-            background: #f0f9ff;
-            border: 2px solid #3b82f6;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .backup-section h3 {
-            color: #1e40af;
-            margin-bottom: 15px;
-        }
-        .status-text {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            border-left: 4px solid #3b82f6;
         }
         
         .cards {
@@ -348,6 +308,36 @@
             color: #92400e;
             border: 1px solid #fcd34d;
         }
+
+        /* Bloqueio quando offline */
+        .sistema-bloqueado {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .bloqueio-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            margin: 20px;
+        }
+        .bloqueio-box h2 {
+            color: #dc2626;
+            margin-bottom: 20px;
+        }
+        .bloqueio-box p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
         
         @media (max-width: 768px) {
             .header {
@@ -370,15 +360,30 @@
     </style>
 </head>
 <body>
+    <!-- Bloqueio quando não conectado -->
+    <div class="sistema-bloqueado" id="bloqueio">
+        <div class="bloqueio-box">
+            <h2>🔒 Sistema Requer Conexão</h2>
+            <p><strong>Este sistema funciona apenas ONLINE com dados sincronizados.</strong></p>
+            <p>Configure o Firebase para acessar o sistema:</p>
+            <ol style="text-align: left; margin: 20px 0;">
+                <li>Clique em <strong>"⚙️ Config"</strong> no menu</li>
+                <li>Cole sua configuração Firebase</li>
+                <li>Clique em <strong>"Salvar"</strong></li>
+            </ol>
+            <button class="btn btn-info" onclick="mostrarPagina('config')">⚙️ Ir para Configuração</button>
+        </div>
+    </div>
+
     <div class="header">
         <div class="logo">
             Resenhas And Falcatruas
             <span class="badge" id="status-badge">🔄 CONECTANDO</span>
         </div>
         <div>
-            <button class="nav-btn active" onclick="mostrarPagina('apostas')">Apostas</button>
-            <button class="nav-btn" onclick="mostrarPagina('config')">⚙️ Config</button>
-            <button class="nav-btn" onclick="mostrarPagina('regras')">Regras</button>
+            <button class="nav-btn" onclick="mostrarPagina('apostas')" id="nav-apostas" disabled>Apostas</button>
+            <button class="nav-btn active" onclick="mostrarPagina('config')" id="nav-config">⚙️ Config</button>
+            <button class="nav-btn" onclick="mostrarPagina('regras')" id="nav-regras" disabled>Regras</button>
         </div>
     </div>
 
@@ -388,60 +393,60 @@
         <div class="message warning" id="warning-msg"></div>
 
         <!-- Página de Configuração -->
-        <div id="config" class="hidden">
+        <div id="config">
             <div class="config-box">
-                <h3>🔧 Configuração do Firebase</h3>
+                <h3>🔧 Configuração Obrigatória do Firebase</h3>
                 <p style="margin-bottom: 15px; color: #92400e;">
-                    <strong>Instruções:</strong> Crie um projeto no <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a> 
-                    e cole a configuração aqui. <a href="#" onclick="mostrarInstrucoes()">Ver tutorial completo</a>
+                    <strong>⚠️ SISTEMA ONLINE APENAS:</strong> Configure o Firebase para usar o sistema. 
+                    Todos os dados ficam sincronizados em tempo real.
+                </p>
+                <p style="margin-bottom: 15px; color: #92400e;">
+                    <strong>Tutorial:</strong> Crie um projeto no <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a> 
+                    e cole a configuração aqui. <a href="#" onclick="mostrarInstrucoes()">Ver instruções detalhadas</a>
                 </p>
                 
                 <textarea 
                     class="config-input" 
                     id="firebase-config" 
-                    placeholder='Cole aqui a configuração do Firebase (formato JSON):
+                    placeholder='Cole aqui a configuração do Firebase (formato JSON correto):
 {
   "apiKey": "sua-api-key",
   "authDomain": "seu-projeto.firebaseapp.com",
   "databaseURL": "https://seu-projeto-default-rtdb.firebaseio.com/",
   "projectId": "seu-projeto",
-  "storageBucket": "seu-projeto.appspot.com",
+  "storageBucket": "seu-projeto.firebasestorage.app",
   "messagingSenderId": "123456789",
   "appId": "1:123456789:web:abcdef"
 }'
                     rows="12"></textarea>
                 
                 <div style="margin-bottom: 15px;">
-                    <button class="btn btn-success" onclick="salvarConfig()">💾 Salvar Configuração</button>
+                    <button class="btn btn-success" onclick="salvarConfig()">💾 Salvar e Conectar</button>
                     <button class="btn btn-info" onclick="testarConexao()">🔍 Testar Conexão</button>
-                    <button class="btn btn-warning" onclick="usarModoOffline()">📱 Modo Offline</button>
                 </div>
 
                 <div id="instrucoes" class="hidden" style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                    <h4>📋 Tutorial Firebase:</h4>
+                    <h4>📋 Instruções Firebase:</h4>
                     <ol style="margin: 10px 0 10px 20px; line-height: 1.6;">
                         <li>Acesse <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
-                        <li>Clique em "Criar um projeto"</li>
-                        <li>Escolha um nome (ex: "apostas-resenhas")</li>
-                        <li>Desabilite Analytics (opcional)</li>
-                        <li>No painel, clique no ícone web "&lt;/&gt;"</li>
-                        <li>Registre o app (qualquer nome)</li>
-                        <li>Copie APENAS o objeto "firebaseConfig"</li>
-                        <li>Cole acima e clique em "Salvar"</li>
-                        <li>Vá em "Realtime Database" → "Criar banco"</li>
-                        <li>Escolha "Modo de teste" por 30 dias</li>
+                        <li>Crie um projeto novo</li>
+                        <li>Ative "Realtime Database" em modo teste</li>
+                        <li>Registre um Web App</li>
+                        <li><strong>IMPORTANTE:</strong> Copie APENAS o objeto JSON (com aspas nas chaves)</li>
+                        <li>Cole acima no formato correto</li>
                     </ol>
+                    <div style="background: #f0f9ff; padding: 10px; border-radius: 5px; border-left: 4px solid #3b82f6; margin-top: 10px;">
+                        <strong>Formato correto:</strong><br>
+                        <code>{"apiKey": "valor", "authDomain": "valor", ...}</code><br><br>
+                        <strong>❌ Não copie:</strong> <code>const firebaseConfig = {...};</code><br>
+                        <strong>✅ Copie só:</strong> <code>{...}</code>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Página de Apostas -->
-        <div id="apostas">
-            <div class="success-box" id="main-status">
-                <h3>🎉 Sistema Carregado!</h3>
-                <p>Configure o Firebase para salvar dados na nuvem, ou use o modo offline.</p>
-            </div>
-
+        <div id="apostas" class="hidden">
             <!-- Estatísticas -->
             <div class="stats">
                 <div class="stat-card">
@@ -460,17 +465,6 @@
                     <span class="stat-number" id="valor-total">R$ 0</span>
                     <span class="stat-label">Valor Total</span>
                 </div>
-            </div>
-
-            <!-- Backup -->
-            <div class="backup-section">
-                <h3>💾 Dados & Backup</h3>
-                <div class="status-text" id="storage-info">
-                    <strong>Status:</strong> Sistema iniciado
-                </div>
-                <button class="btn btn-success" onclick="sincronizar()">🔄 Sincronizar</button>
-                <button class="btn btn-info" onclick="exportarBackup()">📤 Backup</button>
-                <button class="btn btn-danger" onclick="resetarTudo()">🔄 Reset</button>
             </div>
 
             <!-- Nova Aposta -->
@@ -495,7 +489,7 @@
 
             <!-- Lista de Apostas -->
             <div class="cards" id="lista-apostas">
-                <div class="loading">Carregando apostas...</div>
+                <div class="loading">Carregando apostas do Firebase...</div>
             </div>
         </div>
 
@@ -528,67 +522,7 @@
         let apostas = [];
         let filtroAtual = 'todas';
         let database = null;
-        let modoOffline = false;
         let firebaseConfigured = false;
-
-        // Dados padrão
-        const apostasIniciais = [
-            { 
-                id: 1, 
-                ap1: "Cabral", 
-                ap2: "Islan", 
-                desc: "Quem chega com a melhor carcaça no São Pedro", 
-                val: "100,00", 
-                obs: "", 
-                status: "ativa", 
-                data: "2024-01-15", 
-                vencedor: null 
-            },
-            { 
-                id: 2, 
-                ap1: "Thiago", 
-                ap2: "Cabral", 
-                desc: "Cartola", 
-                val: "100,00 (por turno)", 
-                obs: "", 
-                status: "ativa", 
-                data: "2024-01-16", 
-                vencedor: null 
-            },
-            { 
-                id: 3, 
-                ap1: "Thiago (Flamengo)", 
-                ap2: "Dinho (São Paulo)", 
-                desc: "Quem ganha ou chega mais longe nas competições", 
-                val: "50,00 (por competição)", 
-                obs: "", 
-                status: "ativa", 
-                data: "2024-01-17", 
-                vencedor: null 
-            },
-            { 
-                id: 4, 
-                ap1: "Alisson (Flamengo)", 
-                ap2: "Islan (São Paulo)", 
-                desc: "Quem fica na frente no Brasileirão", 
-                val: "100,00", 
-                obs: "", 
-                status: "encerrada", 
-                data: "2024-01-10", 
-                vencedor: "Alisson (Flamengo)" 
-            },
-            { 
-                id: 5, 
-                ap1: "Cleiton", 
-                ap2: "Cabral", 
-                desc: "Gabigordo não faz 25 gols na temporada", 
-                val: "100,00", 
-                obs: "Aposta sobre desempenho do Gabigol", 
-                status: "encerrada", 
-                data: "2024-01-08", 
-                vencedor: "Cleiton" 
-            }
-        ];
 
         // ===== UTILITÁRIAS =====
         function gerarId() {
@@ -622,17 +556,26 @@
             const badge = document.getElementById('status-badge');
             const classes = {
                 'online': { class: '', text: '✅ ONLINE' },
-                'offline': { class: 'offline', text: '📱 OFFLINE' },
-                'error': { class: 'error', text: '❌ ERRO' },
+                'error': { class: 'error', text: '❌ DESCONECTADO' },
                 'connecting': { class: 'offline', text: '🔄 CONECTANDO' }
             };
             
             const config = classes[tipo] || classes.online;
             badge.className = `badge ${config.class}`;
             badge.textContent = config.text;
-            
-            const statusInfo = document.getElementById('storage-info');
-            statusInfo.innerHTML = `<strong>Status:</strong> ${texto}`;
+        }
+
+        function liberarSistema() {
+            document.getElementById('bloqueio').style.display = 'none';
+            document.getElementById('nav-apostas').disabled = false;
+            document.getElementById('nav-regras').disabled = false;
+            mostrarPagina('apostas');
+        }
+
+        function bloquearSistema() {
+            document.getElementById('bloqueio').style.display = 'flex';
+            document.getElementById('nav-apostas').disabled = true;
+            document.getElementById('nav-regras').disabled = true;
         }
 
         // ===== FIREBASE =====
@@ -656,37 +599,53 @@
                     return;
                 }
 
-                // Salvar no sessionStorage
-                sessionStorage.setItem('firebase-config', configText);
+                // Salvar no localStorage para persistir
+                localStorage.setItem('firebase-config', configText);
                 
                 // Inicializar Firebase
                 inicializarFirebase(config);
                 
-                mostrarMensagem('✅ Firebase configurado com sucesso!', 'success');
-                
             } catch (error) {
-                mostrarMensagem('❌ Configuração JSON inválida!', 'error');
+                mostrarMensagem('❌ Configuração JSON inválida! Verifique o formato.', 'error');
+                console.error('Erro JSON:', error);
             }
         }
 
         function inicializarFirebase(config) {
             try {
-                // Se já existe uma instância, não inicializar novamente
-                if (firebase.apps.length === 0) {
-                    firebase.initializeApp(config);
+                atualizarStatus('Conectando ao Firebase...', 'connecting');
+                
+                // Limpar instância anterior se existir
+                if (firebase.apps.length > 0) {
+                    firebase.app().delete();
                 }
                 
+                // Inicializar Firebase
+                firebase.initializeApp(config);
                 database = firebase.database();
-                firebaseConfigured = true;
-                modoOffline = false;
                 
-                atualizarStatus('Firebase conectado', 'online');
-                carregarDados();
+                // Testar conexão
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    if (snapshot.val() === true) {
+                        firebaseConfigured = true;
+                        atualizarStatus('Firebase conectado', 'online');
+                        liberarSistema();
+                        carregarDados();
+                        mostrarMensagem('✅ Firebase conectado! Sistema liberado.', 'success');
+                    } else {
+                        firebaseConfigured = false;
+                        atualizarStatus('Sem conexão Firebase', 'error');
+                        bloquearSistema();
+                        mostrarMensagem('❌ Firebase sem conexão. Verifique a configuração.', 'error');
+                    }
+                });
                 
             } catch (error) {
                 console.error('Erro ao inicializar Firebase:', error);
-                mostrarMensagem('❌ Erro ao conectar Firebase. Verificando configuração...', 'error');
-                atualizarStatus('Erro na conexão Firebase', 'error');
+                mostrarMensagem('❌ Erro ao conectar Firebase: ' + error.message, 'error');
+                atualizarStatus('Erro na conexão', 'error');
+                firebaseConfigured = false;
+                bloquearSistema();
             }
         }
 
@@ -700,89 +659,43 @@
 
             try {
                 const config = JSON.parse(configText);
-                atualizarStatus('Testando conexão...', 'connecting');
-                
-                // Tentar conectar
-                if (firebase.apps.length === 0) {
-                    firebase.initializeApp(config);
-                }
-                
-                const testDb = firebase.database();
-                testDb.ref('.info/connected').once('value')
-                    .then((snapshot) => {
-                        if (snapshot.val() === true) {
-                            mostrarMensagem('✅ Conexão Firebase OK!', 'success');
-                            atualizarStatus('Conexão testada com sucesso', 'online');
-                        } else {
-                            mostrarMensagem('⚠️ Firebase configurado, mas sem conexão', 'warning');
-                            atualizarStatus('Firebase configurado (offline)', 'offline');
-                        }
-                    })
-                    .catch((error) => {
-                        mostrarMensagem('❌ Erro na conexão: ' + error.message, 'error');
-                        atualizarStatus('Erro na conexão', 'error');
-                    });
-                    
+                inicializarFirebase(config);
             } catch (error) {
                 mostrarMensagem('❌ Erro na configuração: ' + error.message, 'error');
-                atualizarStatus('Erro na configuração', 'error');
             }
-        }
-
-        function usarModoOffline() {
-            modoOffline = true;
-            firebaseConfigured = false;
-            apostas = [...apostasIniciais];
-            atualizarStatus('Modo offline ativo', 'offline');
-            renderizarApostas();
-            mostrarMensagem('📱 Modo offline ativado! Dados só na sessão atual.', 'warning');
         }
 
         // ===== DADOS =====
         function carregarDados() {
-            if (modoOffline || !firebaseConfigured) {
-                apostas = [...apostasIniciais];
-                renderizarApostas();
-                return;
-            }
-
-            if (!database) {
-                apostas = [...apostasIniciais];
+            if (!firebaseConfigured || !database) {
+                apostas = [];
                 renderizarApostas();
                 return;
             }
 
             atualizarStatus('Carregando dados...', 'connecting');
             
-            database.ref('apostas').once('value')
-                .then((snapshot) => {
-                    const dados = snapshot.val();
-                    if (dados && Array.isArray(dados) && dados.length > 0) {
-                        apostas = dados;
-                        atualizarStatus('Dados carregados do Firebase', 'online');
-                    } else {
-                        apostas = [...apostasIniciais];
-                        atualizarStatus('Usando dados padrão', 'online');
-                        sincronizar(); // Salvar dados padrão no Firebase
-                    }
-                    renderizarApostas();
-                })
-                .catch((error) => {
-                    console.error('Erro ao carregar:', error);
-                    apostas = [...apostasIniciais];
-                    atualizarStatus('Erro ao carregar - usando dados padrão', 'error');
-                    renderizarApostas();
-                });
+            // Escutar mudanças em tempo real
+            database.ref('apostas').on('value', (snapshot) => {
+                const dados = snapshot.val();
+                if (dados && Array.isArray(dados)) {
+                    apostas = dados;
+                } else {
+                    apostas = [];
+                }
+                renderizarApostas();
+                atualizarStatus('Dados sincronizados', 'online');
+            }, (error) => {
+                console.error('Erro ao carregar dados:', error);
+                mostrarMensagem('❌ Erro ao carregar dados: ' + error.message, 'error');
+                atualizarStatus('Erro nos dados', 'error');
+                bloquearSistema();
+            });
         }
 
-        function sincronizar() {
-            if (modoOffline) {
-                mostrarMensagem('📱 Modo offline - sincronização desabilitada', 'warning');
-                return;
-            }
-
+        function sincronizarDados() {
             if (!firebaseConfigured || !database) {
-                mostrarMensagem('❌ Configure o Firebase primeiro!', 'error');
+                mostrarMensagem('❌ Firebase não configurado!', 'error');
                 return;
             }
 
@@ -790,47 +703,13 @@
             
             database.ref('apostas').set(apostas)
                 .then(() => {
-                    mostrarMensagem('💾 Dados sincronizados com sucesso!', 'success');
-                    atualizarStatus('Sincronizado com Firebase', 'online');
+                    atualizarStatus('Dados sincronizados', 'online');
                 })
                 .catch((error) => {
                     console.error('Erro ao sincronizar:', error);
                     mostrarMensagem('❌ Erro na sincronização: ' + error.message, 'error');
                     atualizarStatus('Erro na sincronização', 'error');
                 });
-        }
-
-        function exportarBackup() {
-            try {
-                const dados = JSON.stringify(apostas, null, 2);
-                const blob = new Blob([dados], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `apostas_backup_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                
-                mostrarMensagem('📤 Backup baixado com sucesso!', 'success');
-            } catch (error) {
-                mostrarMensagem('❌ Erro ao criar backup.', 'error');
-            }
-        }
-
-        function resetarTudo() {
-            if (confirm('⚠️ ATENÇÃO!\n\nIsso vai apagar TODAS as apostas e voltar aos dados iniciais.\n\nTem certeza?')) {
-                apostas = [...apostasIniciais];
-                
-                if (firebaseConfigured && !modoOffline) {
-                    sincronizar();
-                }
-                
-                renderizarApostas();
-                mostrarMensagem('🔄 Dados resetados para o padrão!', 'success');
-            }
         }
 
         // ===== INTERFACE =====
@@ -853,10 +732,9 @@
             // Atualizar botões de navegação
             navButtons.forEach(btn => btn.classList.remove('active'));
             
-            const indiceAtivo = pagina === 'apostas' ? 0 : pagina === 'config' ? 1 : 2;
-            if (navButtons[indiceAtivo]) {
-                navButtons[indiceAtivo].classList.add('active');
-            }
+            if (pagina === 'apostas' && navButtons[0]) navButtons[0].classList.add('active');
+            if (pagina === 'config' && navButtons[1]) navButtons[1].classList.add('active');
+            if (pagina === 'regras' && navButtons[2]) navButtons[2].classList.add('active');
         }
 
         function mostrarInstrucoes() {
@@ -876,6 +754,11 @@
 
         // ===== APOSTAS =====
         function criarAposta() {
+            if (!firebaseConfigured) {
+                mostrarMensagem('❌ Firebase não configurado!', 'error');
+                return;
+            }
+
             const ap1 = document.getElementById('ap1').value.trim();
             const ap2 = document.getElementById('ap2').value.trim();
             const desc = document.getElementById('desc').value.trim();
@@ -904,12 +787,8 @@
             // Adicionar no início da lista
             apostas.unshift(novaAposta);
             
-            // Sincronizar se Firebase configurado
-            if (firebaseConfigured && !modoOffline) {
-                sincronizar();
-            }
-            
-            renderizarApostas();
+            // Sincronizar automaticamente
+            sincronizarDados();
             
             // Limpar formulário
             document.getElementById('ap1').value = '';
@@ -918,36 +797,37 @@
             document.getElementById('val').value = '';
             document.getElementById('obs').value = '';
             
-            mostrarMensagem('✅ Aposta criada com sucesso!', 'success');
+            mostrarMensagem('✅ Aposta criada e sincronizada!', 'success');
         }
 
         function encerrarAposta(id, vencedor) {
+            if (!firebaseConfigured) {
+                mostrarMensagem('❌ Firebase não configurado!', 'error');
+                return;
+            }
+
             if (confirm(`Confirma "${vencedor}" como vencedor desta aposta?`)) {
                 const aposta = apostas.find(a => a.id === id);
                 if (aposta) {
                     aposta.status = 'encerrada';
                     aposta.vencedor = vencedor;
                     
-                    if (firebaseConfigured && !modoOffline) {
-                        sincronizar();
-                    }
-                    
-                    renderizarApostas();
+                    sincronizarDados();
                     mostrarMensagem(`🏆 ${vencedor} foi declarado vencedor!`, 'success');
                 }
             }
         }
 
         function excluirAposta(id) {
+            if (!firebaseConfigured) {
+                mostrarMensagem('❌ Firebase não configurado!', 'error');
+                return;
+            }
+
             if (confirm('Tem certeza que deseja excluir esta aposta permanentemente?')) {
                 apostas = apostas.filter(a => a.id !== id);
-                
-                if (firebaseConfigured && !modoOffline) {
-                    sincronizar();
-                }
-                
-                renderizarApostas();
-                mostrarMensagem('🗑️ Aposta excluída com sucesso!', 'success');
+                sincronizarDados();
+                mostrarMensagem('🗑️ Aposta excluída!', 'success');
             }
         }
 
@@ -965,7 +845,11 @@
             
             // Se não houver apostas
             if (apostasFiltradas.length === 0) {
-                container.innerHTML = `<div class="loading">Nenhuma aposta ${filtroAtual === 'todas' ? 'encontrada' : filtroAtual}.</div>`;
+                container.innerHTML = `<div class="loading">
+                    ${apostas.length === 0 ? 
+                        'Nenhuma aposta cadastrada ainda. Adicione a primeira!' : 
+                        `Nenhuma aposta ${filtroAtual}.`}
+                </div>`;
                 atualizarEstatisticas();
                 return;
             }
@@ -1036,29 +920,29 @@
 
         // ===== INICIALIZAÇÃO =====
         function inicializar() {
-            console.log('🚀 Iniciando sistema...');
+            console.log('🚀 Sistema Online-Only iniciando...');
+            
+            atualizarStatus('Aguardando configuração', 'error');
+            bloquearSistema();
             
             // Verificar se há configuração salva
-            const configSalva = sessionStorage.getItem('firebase-config');
+            const configSalva = localStorage.getItem('firebase-config');
             if (configSalva) {
                 try {
                     const config = JSON.parse(configSalva);
                     document.getElementById('firebase-config').value = configSalva;
                     inicializarFirebase(config);
+                    console.log('✅ Configuração encontrada, tentando conectar...');
                 } catch (error) {
                     console.warn('Configuração salva inválida:', error);
-                    usarModoOffline();
+                    localStorage.removeItem('firebase-config');
+                    mostrarMensagem('⚠️ Configuração anterior inválida foi removida.', 'warning');
                 }
             } else {
-                // Iniciar em modo offline por padrão
-                usarModoOffline();
+                mostrarMensagem('⚠️ Configure o Firebase para usar o sistema.', 'warning');
             }
             
-            // Atualizar interface
-            renderizarApostas();
-            
-            console.log('✅ Sistema inicializado!');
-            mostrarMensagem('🎉 Sistema carregado! Configure o Firebase ou use modo offline.', 'success');
+            console.log('✅ Sistema carregado - aguardando Firebase');
         }
 
         // ===== EVENTOS =====
@@ -1068,6 +952,13 @@
         if (document.readyState === 'complete') {
             inicializar();
         }
+
+        // Prevenir uso sem Firebase
+        window.addEventListener('beforeunload', function() {
+            if (!firebaseConfigured) {
+                return 'Sistema requer configuração Firebase para funcionar.';
+            }
+        });
     </script>
 </body>
 </html>
