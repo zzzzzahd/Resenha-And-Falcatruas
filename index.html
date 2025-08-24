@@ -63,23 +63,26 @@
             margin: 0 auto; 
             padding: 20px; 
         }
-        .config-box {
-            background: #fef3c7;
-            border: 2px solid #f59e0b;
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border: 2px solid #10b981;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
         }
-        .config-box h3 {
-            color: #92400e;
-            margin-bottom: 15px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .config-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d97706;
-            border-radius: 8px;
-            margin-bottom: 10px;
+        .success-box h3 {
+            color: #065f46;
+            margin-bottom: 8px;
+        }
+        .success-box p {
+            color: #047857;
+            font-weight: 500;
         }
         .form-box {
             background: #f9f9f9;
@@ -156,6 +159,25 @@
         .stat-label {
             font-size: 14px;
             opacity: 0.9;
+        }
+        
+        .backup-section {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .backup-section h3 {
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        .status-text {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
         }
         
         .cards {
@@ -308,36 +330,6 @@
             color: #92400e;
             border: 1px solid #fcd34d;
         }
-
-        /* Bloqueio quando offline */
-        .sistema-bloqueado {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        .bloqueio-box {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 500px;
-            margin: 20px;
-        }
-        .bloqueio-box h2 {
-            color: #dc2626;
-            margin-bottom: 20px;
-        }
-        .bloqueio-box p {
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
         
         @media (max-width: 768px) {
             .header {
@@ -360,30 +352,14 @@
     </style>
 </head>
 <body>
-    <!-- Bloqueio quando não conectado -->
-    <div class="sistema-bloqueado" id="bloqueio">
-        <div class="bloqueio-box">
-            <h2>🔒 Sistema Requer Conexão</h2>
-            <p><strong>Este sistema funciona apenas ONLINE com dados sincronizados.</strong></p>
-            <p>Configure o Firebase para acessar o sistema:</p>
-            <ol style="text-align: left; margin: 20px 0;">
-                <li>Clique em <strong>"⚙️ Config"</strong> no menu</li>
-                <li>Cole sua configuração Firebase</li>
-                <li>Clique em <strong>"Salvar"</strong></li>
-            </ol>
-            <button class="btn btn-info" onclick="mostrarPagina('config')">⚙️ Ir para Configuração</button>
-        </div>
-    </div>
-
     <div class="header">
         <div class="logo">
             Resenhas And Falcatruas
             <span class="badge" id="status-badge">🔄 CONECTANDO</span>
         </div>
         <div>
-            <button class="nav-btn" onclick="mostrarPagina('apostas')" id="nav-apostas" disabled>Apostas</button>
-            <button class="nav-btn active" onclick="mostrarPagina('config')" id="nav-config">⚙️ Config</button>
-            <button class="nav-btn" onclick="mostrarPagina('regras')" id="nav-regras" disabled>Regras</button>
+            <button class="nav-btn active" onclick="mostrarPagina('apostas')">Apostas</button>
+            <button class="nav-btn" onclick="mostrarPagina('regras')">Regras</button>
         </div>
     </div>
 
@@ -392,79 +368,40 @@
         <div class="message error" id="error-msg"></div>
         <div class="message warning" id="warning-msg"></div>
 
-        <!-- Página de Configuração -->
-        <div id="config">
-            <div class="config-box">
-                <h3>🔧 Configuração Obrigatória do Firebase</h3>
-                <p style="margin-bottom: 15px; color: #92400e;">
-                    <strong>⚠️ SISTEMA ONLINE APENAS:</strong> Configure o Firebase para usar o sistema. 
-                    Todos os dados ficam sincronizados em tempo real.
-                </p>
-                <p style="margin-bottom: 15px; color: #92400e;">
-                    <strong>Tutorial:</strong> Crie um projeto no <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a> 
-                    e cole a configuração aqui. <a href="#" onclick="mostrarInstrucoes()">Ver instruções detalhadas</a>
-                </p>
-                
-                <textarea 
-                    class="config-input" 
-                    id="firebase-config" 
-                    placeholder='Cole aqui a configuração do Firebase (formato JSON correto):
-{
-  "apiKey": "sua-api-key",
-  "authDomain": "seu-projeto.firebaseapp.com",
-  "databaseURL": "https://seu-projeto-default-rtdb.firebaseio.com/",
-  "projectId": "seu-projeto",
-  "storageBucket": "seu-projeto.firebasestorage.app",
-  "messagingSenderId": "123456789",
-  "appId": "1:123456789:web:abcdef"
-}'
-                    rows="12"></textarea>
-                
-                <div style="margin-bottom: 15px;">
-                    <button class="btn btn-success" onclick="salvarConfig()">💾 Salvar e Conectar</button>
-                    <button class="btn btn-info" onclick="testarConexao()">🔍 Testar Conexão</button>
-                </div>
-
-                <div id="instrucoes" class="hidden" style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                    <h4>📋 Instruções Firebase:</h4>
-                    <ol style="margin: 10px 0 10px 20px; line-height: 1.6;">
-                        <li>Acesse <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
-                        <li>Crie um projeto novo</li>
-                        <li>Ative "Realtime Database" em modo teste</li>
-                        <li>Registre um Web App</li>
-                        <li><strong>IMPORTANTE:</strong> Copie APENAS o objeto JSON (com aspas nas chaves)</li>
-                        <li>Cole acima no formato correto</li>
-                    </ol>
-                    <div style="background: #f0f9ff; padding: 10px; border-radius: 5px; border-left: 4px solid #3b82f6; margin-top: 10px;">
-                        <strong>Formato correto:</strong><br>
-                        <code>{"apiKey": "valor", "authDomain": "valor", ...}</code><br><br>
-                        <strong>❌ Não copie:</strong> <code>const firebaseConfig = {...};</code><br>
-                        <strong>✅ Copie só:</strong> <code>{...}</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Página de Apostas -->
-        <div id="apostas" class="hidden">
+        <div id="apostas">
+            <div class="success-box" id="main-status">
+                <h3>🔄 Conectando ao Firebase...</h3>
+                <p>Carregando dados sincronizados em tempo real</p>
+            </div>
+
             <!-- Estatísticas -->
             <div class="stats">
                 <div class="stat-card">
-                    <span class="stat-number" id="total-apostas">0</span>
+                    <span class="stat-number" id="total-apostas">-</span>
                     <span class="stat-label">Total</span>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-number" id="apostas-ativas">0</span>
+                    <span class="stat-number" id="apostas-ativas">-</span>
                     <span class="stat-label">Ativas</span>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-number" id="apostas-encerradas">0</span>
+                    <span class="stat-number" id="apostas-encerradas">-</span>
                     <span class="stat-label">Encerradas</span>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-number" id="valor-total">R$ 0</span>
+                    <span class="stat-number" id="valor-total">R$ -</span>
                     <span class="stat-label">Valor Total</span>
                 </div>
+            </div>
+
+            <!-- Status de Sincronização -->
+            <div class="backup-section">
+                <h3>🔄 Sincronização Automática</h3>
+                <div class="status-text" id="storage-info">
+                    <strong>Status:</strong> Conectando ao Firebase...
+                </div>
+                <button class="btn btn-info" onclick="exportarBackup()">📤 Baixar Backup</button>
             </div>
 
             <!-- Nova Aposta -->
@@ -477,7 +414,7 @@
                     <input class="input" placeholder="Valor*" id="val">
                     <input class="input" placeholder="Observações" id="obs">
                 </div>
-                <button class="btn" onclick="criarAposta()">✅ Adicionar Aposta</button>
+                <button class="btn" onclick="criarAposta()" id="btn-criar">✅ Adicionar Aposta</button>
             </div>
             
             <!-- Filtros -->
@@ -489,7 +426,7 @@
 
             <!-- Lista de Apostas -->
             <div class="cards" id="lista-apostas">
-                <div class="loading">Carregando apostas do Firebase...</div>
+                <div class="loading">🔄 Carregando apostas do Firebase...</div>
             </div>
         </div>
 
@@ -518,11 +455,152 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-database-compat.min.js"></script>
 
     <script>
+        // ===== RENDERIZAÇÃO =====
+        function renderizarApostas() {
+            const container = document.getElementById('lista-apostas');
+            
+            // Filtrar apostas
+            let apostasFiltradas = apostas;
+            if (filtroAtual === 'ativas') {
+                apostasFiltradas = apostas.filter(a => a.status === 'ativa');
+            } else if (filtroAtual === 'encerradas') {
+                apostasFiltradas = apostas.filter(a => a.status === 'encerrada');
+            }
+            
+            // Se não houver apostas
+            if (apostasFiltradas.length === 0) {
+                container.innerHTML = `<div class="loading">
+                    ${apostas.length === 0 ? 
+                        '📝 Nenhuma aposta cadastrada ainda. Adicione a primeira!' : 
+                        `📋 Nenhuma aposta ${filtroAtual}.`}
+                </div>`;
+                atualizarEstatisticas();
+                return;
+            }
+            
+            // Gerar HTML das apostas
+            container.innerHTML = '';
+            
+            apostasFiltradas.forEach(aposta => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `card ${aposta.status}`;
+                
+                // Escapar aspas simples nos nomes para evitar problemas no HTML
+                const ap1Safe = aposta.ap1.replace(/'/g, '&#39;');
+                const ap2Safe = aposta.ap2.replace(/'/g, '&#39;');
+                
+                cardDiv.innerHTML = `
+                    <div class="status-badge status-${aposta.status}">
+                        ${aposta.status === 'ativa' ? 'Ativa' : 'Encerrada'}
+                    </div>
+                    <div class="card-title">${aposta.ap1} <span class="vs">vs</span> ${aposta.ap2}</div>
+                    <div class="card-desc">${aposta.desc}</div>
+                    <div class="card-value">💰 R$ ${aposta.val}</div>
+                    ${aposta.obs ? `<div class="card-obs">📝 ${aposta.obs}</div>` : ''}
+                    ${aposta.vencedor ? `<div class="card-obs" style="color: #10b981; font-weight: bold;">🏆 Vencedor: ${aposta.vencedor}</div>` : ''}
+                    <small style="color: #999; display: block; margin-bottom: 15px;">📅 Criada em: ${aposta.data}</small>
+                    <div class="card-buttons">
+                        ${aposta.status === 'ativa' ? `
+                            <button class="card-btn btn-success" onclick="encerrarAposta(${aposta.id}, '${ap1Safe}')" ${!firebaseConectado ? 'disabled' : ''}>
+                                🏆 ${aposta.ap1}
+                            </button>
+                            <button class="card-btn btn-success" onclick="encerrarAposta(${aposta.id}, '${ap2Safe}')" ${!firebaseConectado ? 'disabled' : ''}>
+                                🏆 ${aposta.ap2}
+                            </button>
+                        ` : ''}
+                        <button class="card-btn btn-danger" onclick="excluirAposta(${aposta.id})" ${!firebaseConectado ? 'disabled' : ''}>
+                            🗑️ Excluir
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(cardDiv);
+            });
+            
+            atualizarEstatisticas();
+        }
+
+        function atualizarEstatisticas() {
+            const total = apostas.length;
+            const ativas = apostas.filter(a => a.status === 'ativa').length;
+            const encerradas = apostas.filter(a => a.status === 'encerrada').length;
+            
+            // Calcular valor total
+            const valorTotal = apostas.reduce((acc, aposta) => {
+                const nums = aposta.val.match(/[\d,]+/g);
+                if (nums) {
+                    const valor = parseFloat(nums.join('').replace(',', '.'));
+                    return acc + valor;
+                }
+                return acc;
+            }, 0);
+            
+            // Atualizar elementos
+            document.getElementById('total-apostas').textContent = firebaseConectado ? total : '-';
+            document.getElementById('apostas-ativas').textContent = firebaseConectado ? ativas : '-';
+            document.getElementById('apostas-encerradas').textContent = firebaseConectado ? encerradas : '-';
+            document.getElementById('valor-total').textContent = firebaseConectado ? 
+                `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : 'R$ -';
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        function inicializar() {
+            console.log('🚀 Resenhas And Falcatruas - Iniciando...');
+            console.log('🔧 Configuração Firebase integrada');
+            
+            // Desabilitar funcionalidades até conectar
+            desabilitarFuncionalidades();
+            
+            // Inicializar Firebase automaticamente
+            inicializarFirebase();
+            
+            // Configurar renderização inicial
+            renderizarApostas();
+            
+            console.log('✅ Sistema inicializado - aguardando conexão Firebase');
+        }
+
+        // ===== EVENTOS =====
+        document.addEventListener('DOMContentLoaded', inicializar);
+        
+        // Fallback para garantir inicialização
+        if (document.readyState === 'complete') {
+            inicializar();
+        }
+
+        // Reconexão automática quando internet volta
+        window.addEventListener('online', () => {
+            console.log('🌐 Internet reconectada - verificando Firebase...');
+            mostrarMensagem('🌐 Internet reconectada!', 'success');
+            if (database) {
+                carregarDados();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('📵 Internet desconectada');
+            atualizarStatus('Sem internet - aguardando reconexão...', 'error');
+            mostrarMensagem('📵 Conexão perdida - dados podem não estar atualizados', 'warning');
+        });
+    </script>
+</body>
+</html> CONFIGURAÇÃO FIREBASE (JÁ INTEGRADA) =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxYWK7bLY9gjpMZbC8O6vwZp0VGPFIFfU",
+            authDomain: "resenha-and-falcatruas.firebaseapp.com",
+            databaseURL: "https://resenha-and-falcatruas-default-rtdb.firebaseio.com",
+            projectId: "resenha-and-falcatruas",
+            storageBucket: "resenha-and-falcatruas.firebasestorage.app",
+            messagingSenderId: "865007454734",
+            appId: "1:865007454734:web:7e22573f904d4b68744a5f",
+            measurementId: "G-NHJGPF5T83"
+        };
+
         // ===== VARIÁVEIS GLOBAIS =====
         let apostas = [];
         let filtroAtual = 'todas';
         let database = null;
-        let firebaseConfigured = false;
+        let firebaseConectado = false;
 
         // ===== UTILITÁRIAS =====
         function gerarId() {
@@ -554,167 +632,167 @@
 
         function atualizarStatus(texto, tipo = 'online') {
             const badge = document.getElementById('status-badge');
-            const classes = {
-                'online': { class: '', text: '✅ ONLINE' },
-                'error': { class: 'error', text: '❌ DESCONECTADO' },
-                'connecting': { class: 'offline', text: '🔄 CONECTANDO' }
+            const statusInfo = document.getElementById('storage-info');
+            const mainStatus = document.getElementById('main-status');
+            
+            const configs = {
+                'online': {
+                    badge: { class: '', text: '✅ ONLINE' },
+                    box: { class: 'success-box', titulo: '🎉 Sistema Conectado!', desc: 'Dados sincronizados em tempo real com Firebase' }
+                },
+                'connecting': {
+                    badge: { class: 'offline', text: '🔄 CONECTANDO' },
+                    box: { class: 'success-box', titulo: '🔄 Conectando...', desc: 'Estabelecendo conexão com Firebase' }
+                },
+                'error': {
+                    badge: { class: 'error', text: '❌ OFFLINE' },
+                    box: { class: 'message error', titulo: '❌ Erro de Conexão', desc: 'Problemas na conexão com Firebase. Verifique sua internet.' }
+                }
             };
             
-            const config = classes[tipo] || classes.online;
-            badge.className = `badge ${config.class}`;
-            badge.textContent = config.text;
-        }
-
-        function liberarSistema() {
-            document.getElementById('bloqueio').style.display = 'none';
-            document.getElementById('nav-apostas').disabled = false;
-            document.getElementById('nav-regras').disabled = false;
-            mostrarPagina('apostas');
-        }
-
-        function bloquearSistema() {
-            document.getElementById('bloqueio').style.display = 'flex';
-            document.getElementById('nav-apostas').disabled = true;
-            document.getElementById('nav-regras').disabled = true;
+            const config = configs[tipo] || configs.online;
+            
+            // Atualizar badge
+            badge.className = `badge ${config.badge.class}`;
+            badge.textContent = config.badge.text;
+            
+            // Atualizar status detalhado
+            statusInfo.innerHTML = `<strong>Status:</strong> ${texto}`;
+            
+            // Atualizar caixa principal
+            mainStatus.className = config.box.class;
+            mainStatus.innerHTML = `
+                <h3>${config.box.titulo}</h3>
+                <p>${config.box.desc}</p>
+            `;
         }
 
         // ===== FIREBASE =====
-        function salvarConfig() {
-            const configText = document.getElementById('firebase-config').value.trim();
-            
-            if (!configText) {
-                mostrarMensagem('❌ Cole a configuração do Firebase!', 'error');
-                return;
-            }
-
+        function inicializarFirebase() {
             try {
-                const config = JSON.parse(configText);
-                
-                // Validar campos obrigatórios
-                const campos = ['apiKey', 'authDomain', 'databaseURL', 'projectId'];
-                const faltando = campos.filter(campo => !config[campo]);
-                
-                if (faltando.length > 0) {
-                    mostrarMensagem(`❌ Campos obrigatórios faltando: ${faltando.join(', ')}`, 'error');
-                    return;
-                }
-
-                // Salvar no localStorage para persistir
-                localStorage.setItem('firebase-config', configText);
+                console.log('🚀 Inicializando Firebase...');
+                atualizarStatus('Inicializando Firebase...', 'connecting');
                 
                 // Inicializar Firebase
-                inicializarFirebase(config);
-                
-            } catch (error) {
-                mostrarMensagem('❌ Configuração JSON inválida! Verifique o formato.', 'error');
-                console.error('Erro JSON:', error);
-            }
-        }
-
-        function inicializarFirebase(config) {
-            try {
-                atualizarStatus('Conectando ao Firebase...', 'connecting');
-                
-                // Limpar instância anterior se existir
-                if (firebase.apps.length > 0) {
-                    firebase.app().delete();
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
                 }
                 
-                // Inicializar Firebase
-                firebase.initializeApp(config);
                 database = firebase.database();
                 
-                // Testar conexão
+                // Monitorar conexão
                 database.ref('.info/connected').on('value', (snapshot) => {
-                    if (snapshot.val() === true) {
-                        firebaseConfigured = true;
-                        atualizarStatus('Firebase conectado', 'online');
-                        liberarSistema();
+                    firebaseConectado = snapshot.val() === true;
+                    
+                    if (firebaseConectado) {
+                        console.log('✅ Firebase conectado!');
+                        atualizarStatus('Conectado e sincronizado', 'online');
+                        habilitarFuncionalidades();
                         carregarDados();
-                        mostrarMensagem('✅ Firebase conectado! Sistema liberado.', 'success');
                     } else {
-                        firebaseConfigured = false;
-                        atualizarStatus('Sem conexão Firebase', 'error');
-                        bloquearSistema();
-                        mostrarMensagem('❌ Firebase sem conexão. Verifique a configuração.', 'error');
+                        console.log('❌ Firebase desconectado');
+                        atualizarStatus('Conexão perdida - tentando reconectar...', 'error');
+                        desabilitarFuncionalidades();
                     }
                 });
                 
             } catch (error) {
-                console.error('Erro ao inicializar Firebase:', error);
+                console.error('❌ Erro ao inicializar Firebase:', error);
+                atualizarStatus('Erro na inicialização', 'error');
                 mostrarMensagem('❌ Erro ao conectar Firebase: ' + error.message, 'error');
-                atualizarStatus('Erro na conexão', 'error');
-                firebaseConfigured = false;
-                bloquearSistema();
             }
         }
 
-        function testarConexao() {
-            const configText = document.getElementById('firebase-config').value.trim();
-            
-            if (!configText) {
-                mostrarMensagem('❌ Configure o Firebase primeiro!', 'error');
-                return;
-            }
+        function habilitarFuncionalidades() {
+            document.getElementById('btn-criar').disabled = false;
+            const botoes = document.querySelectorAll('.card-btn');
+            botoes.forEach(btn => btn.disabled = false);
+        }
 
-            try {
-                const config = JSON.parse(configText);
-                inicializarFirebase(config);
-            } catch (error) {
-                mostrarMensagem('❌ Erro na configuração: ' + error.message, 'error');
-            }
+        function desabilitarFuncionalidades() {
+            document.getElementById('btn-criar').disabled = true;
+            const botoes = document.querySelectorAll('.card-btn');
+            botoes.forEach(btn => btn.disabled = true);
         }
 
         // ===== DADOS =====
         function carregarDados() {
-            if (!firebaseConfigured || !database) {
-                apostas = [];
-                renderizarApostas();
+            if (!firebaseConectado || !database) {
+                console.log('⚠️ Firebase não conectado para carregar dados');
                 return;
             }
 
-            atualizarStatus('Carregando dados...', 'connecting');
+            console.log('📥 Carregando dados do Firebase...');
             
             // Escutar mudanças em tempo real
             database.ref('apostas').on('value', (snapshot) => {
                 const dados = snapshot.val();
+                
                 if (dados && Array.isArray(dados)) {
                     apostas = dados;
+                    console.log(`✅ ${dados.length} apostas carregadas`);
                 } else {
                     apostas = [];
+                    console.log('📝 Nenhuma aposta encontrada - iniciando vazio');
                 }
+                
                 renderizarApostas();
-                atualizarStatus('Dados sincronizados', 'online');
+                atualizarStatus('Dados atualizados', 'online');
+                
             }, (error) => {
-                console.error('Erro ao carregar dados:', error);
+                console.error('❌ Erro ao carregar dados:', error);
                 mostrarMensagem('❌ Erro ao carregar dados: ' + error.message, 'error');
-                atualizarStatus('Erro nos dados', 'error');
-                bloquearSistema();
+                atualizarStatus('Erro ao carregar dados', 'error');
             });
         }
 
-        function sincronizarDados() {
-            if (!firebaseConfigured || !database) {
-                mostrarMensagem('❌ Firebase não configurado!', 'error');
-                return;
+        function salvarDados() {
+            if (!firebaseConectado || !database) {
+                mostrarMensagem('❌ Firebase não conectado!', 'error');
+                return Promise.reject('Firebase não conectado');
             }
 
-            atualizarStatus('Sincronizando...', 'connecting');
-            
-            database.ref('apostas').set(apostas)
+            return database.ref('apostas').set(apostas)
                 .then(() => {
-                    atualizarStatus('Dados sincronizados', 'online');
+                    console.log('💾 Dados salvos no Firebase');
+                    atualizarStatus('Dados salvos e sincronizados', 'online');
                 })
                 .catch((error) => {
-                    console.error('Erro ao sincronizar:', error);
-                    mostrarMensagem('❌ Erro na sincronização: ' + error.message, 'error');
-                    atualizarStatus('Erro na sincronização', 'error');
+                    console.error('❌ Erro ao salvar:', error);
+                    mostrarMensagem('❌ Erro ao salvar: ' + error.message, 'error');
+                    atualizarStatus('Erro ao salvar dados', 'error');
+                    throw error;
                 });
+        }
+
+        function exportarBackup() {
+            try {
+                const dados = {
+                    backup_date: new Date().toISOString(),
+                    total_apostas: apostas.length,
+                    apostas: apostas
+                };
+                
+                const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `apostas_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                mostrarMensagem('📤 Backup baixado com sucesso!', 'success');
+            } catch (error) {
+                mostrarMensagem('❌ Erro ao criar backup: ' + error.message, 'error');
+            }
         }
 
         // ===== INTERFACE =====
         function mostrarPagina(pagina) {
-            const paginas = ['apostas', 'config', 'regras'];
+            const paginas = ['apostas', 'regras'];
             const navButtons = document.querySelectorAll('.nav-btn');
             
             // Esconder todas as páginas
@@ -733,13 +811,7 @@
             navButtons.forEach(btn => btn.classList.remove('active'));
             
             if (pagina === 'apostas' && navButtons[0]) navButtons[0].classList.add('active');
-            if (pagina === 'config' && navButtons[1]) navButtons[1].classList.add('active');
-            if (pagina === 'regras' && navButtons[2]) navButtons[2].classList.add('active');
-        }
-
-        function mostrarInstrucoes() {
-            const instrucoes = document.getElementById('instrucoes');
-            instrucoes.classList.toggle('hidden');
+            if (pagina === 'regras' && navButtons[1]) navButtons[1].classList.add('active');
         }
 
         function filtrar(tipo) {
@@ -754,8 +826,8 @@
 
         // ===== APOSTAS =====
         function criarAposta() {
-            if (!firebaseConfigured) {
-                mostrarMensagem('❌ Firebase não configurado!', 'error');
+            if (!firebaseConectado) {
+                mostrarMensagem('❌ Aguarde a conexão com Firebase!', 'error');
                 return;
             }
 
@@ -770,6 +842,11 @@
                 mostrarMensagem('❌ Preencha todos os campos obrigatórios (*)!', 'error');
                 return;
             }
+            
+            // Desabilitar botão temporariamente
+            const btnCriar = document.getElementById('btn-criar');
+            btnCriar.disabled = true;
+            btnCriar.textContent = '⏳ Salvando...';
             
             // Criar nova aposta
             const novaAposta = {
@@ -787,22 +864,33 @@
             // Adicionar no início da lista
             apostas.unshift(novaAposta);
             
-            // Sincronizar automaticamente
-            sincronizarDados();
-            
-            // Limpar formulário
-            document.getElementById('ap1').value = '';
-            document.getElementById('ap2').value = '';
-            document.getElementById('desc').value = '';
-            document.getElementById('val').value = '';
-            document.getElementById('obs').value = '';
-            
-            mostrarMensagem('✅ Aposta criada e sincronizada!', 'success');
+            // Salvar no Firebase
+            salvarDados()
+                .then(() => {
+                    // Limpar formulário
+                    document.getElementById('ap1').value = '';
+                    document.getElementById('ap2').value = '';
+                    document.getElementById('desc').value = '';
+                    document.getElementById('val').value = '';
+                    document.getElementById('obs').value = '';
+                    
+                    mostrarMensagem('✅ Aposta criada e sincronizada!', 'success');
+                })
+                .catch(() => {
+                    // Remover da lista se não salvou
+                    apostas.shift();
+                    renderizarApostas();
+                })
+                .finally(() => {
+                    // Reabilitar botão
+                    btnCriar.disabled = false;
+                    btnCriar.textContent = '✅ Adicionar Aposta';
+                });
         }
 
         function encerrarAposta(id, vencedor) {
-            if (!firebaseConfigured) {
-                mostrarMensagem('❌ Firebase não configurado!', 'error');
+            if (!firebaseConectado) {
+                mostrarMensagem('❌ Aguarde a conexão com Firebase!', 'error');
                 return;
             }
 
@@ -812,153 +900,36 @@
                     aposta.status = 'encerrada';
                     aposta.vencedor = vencedor;
                     
-                    sincronizarDados();
-                    mostrarMensagem(`🏆 ${vencedor} foi declarado vencedor!`, 'success');
+                    salvarDados()
+                        .then(() => {
+                            mostrarMensagem(`🏆 ${vencedor} foi declarado vencedor!`, 'success');
+                        });
                 }
             }
         }
 
         function excluirAposta(id) {
-            if (!firebaseConfigured) {
-                mostrarMensagem('❌ Firebase não configurado!', 'error');
+            if (!firebaseConectado) {
+                mostrarMensagem('❌ Aguarde a conexão com Firebase!', 'error');
                 return;
             }
 
             if (confirm('Tem certeza que deseja excluir esta aposta permanentemente?')) {
+                const apostaOriginal = apostas.find(a => a.id === id);
                 apostas = apostas.filter(a => a.id !== id);
-                sincronizarDados();
-                mostrarMensagem('🗑️ Aposta excluída!', 'success');
-            }
-        }
-
-        // ===== RENDERIZAÇÃO =====
-        function renderizarApostas() {
-            const container = document.getElementById('lista-apostas');
-            
-            // Filtrar apostas
-            let apostasFiltradas = apostas;
-            if (filtroAtual === 'ativas') {
-                apostasFiltradas = apostas.filter(a => a.status === 'ativa');
-            } else if (filtroAtual === 'encerradas') {
-                apostasFiltradas = apostas.filter(a => a.status === 'encerrada');
-            }
-            
-            // Se não houver apostas
-            if (apostasFiltradas.length === 0) {
-                container.innerHTML = `<div class="loading">
-                    ${apostas.length === 0 ? 
-                        'Nenhuma aposta cadastrada ainda. Adicione a primeira!' : 
-                        `Nenhuma aposta ${filtroAtual}.`}
-                </div>`;
-                atualizarEstatisticas();
-                return;
-            }
-            
-            // Gerar HTML das apostas
-            container.innerHTML = '';
-            
-            apostasFiltradas.forEach(aposta => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = `card ${aposta.status}`;
                 
-                // Escapar aspas simples nos nomes para evitar problemas no HTML
-                const ap1Safe = aposta.ap1.replace(/'/g, '&#39;');
-                const ap2Safe = aposta.ap2.replace(/'/g, '&#39;');
-                
-                cardDiv.innerHTML = `
-                    <div class="status-badge status-${aposta.status}">
-                        ${aposta.status === 'ativa' ? 'Ativa' : 'Encerrada'}
-                    </div>
-                    <div class="card-title">${aposta.ap1} <span class="vs">vs</span> ${aposta.ap2}</div>
-                    <div class="card-desc">${aposta.desc}</div>
-                    <div class="card-value">💰 R$ ${aposta.val}</div>
-                    ${aposta.obs ? `<div class="card-obs">📝 ${aposta.obs}</div>` : ''}
-                    ${aposta.vencedor ? `<div class="card-obs" style="color: #10b981; font-weight: bold;">🏆 Vencedor: ${aposta.vencedor}</div>` : ''}
-                    <small style="color: #999; display: block; margin-bottom: 15px;">📅 Criada em: ${aposta.data}</small>
-                    <div class="card-buttons">
-                        ${aposta.status === 'ativa' ? `
-                            <button class="card-btn btn-success" onclick="encerrarAposta(${aposta.id}, '${ap1Safe}')">
-                                🏆 ${aposta.ap1}
-                            </button>
-                            <button class="card-btn btn-success" onclick="encerrarAposta(${aposta.id}, '${ap2Safe}')">
-                                🏆 ${aposta.ap2}
-                            </button>
-                        ` : ''}
-                        <button class="card-btn btn-danger" onclick="excluirAposta(${aposta.id})">
-                            🗑️ Excluir
-                        </button>
-                    </div>
-                `;
-                
-                container.appendChild(cardDiv);
-            });
-            
-            atualizarEstatisticas();
-        }
-
-        function atualizarEstatisticas() {
-            const total = apostas.length;
-            const ativas = apostas.filter(a => a.status === 'ativa').length;
-            const encerradas = apostas.filter(a => a.status === 'encerrada').length;
-            
-            // Calcular valor total
-            const valorTotal = apostas.reduce((acc, aposta) => {
-                const nums = aposta.val.match(/[\d,]+/);
-                if (nums) {
-                    const valor = parseFloat(nums[0].replace(',', '.'));
-                    return acc + valor;
-                }
-                return acc;
-            }, 0);
-            
-            // Atualizar elementos
-            document.getElementById('total-apostas').textContent = total;
-            document.getElementById('apostas-ativas').textContent = ativas;
-            document.getElementById('apostas-encerradas').textContent = encerradas;
-            document.getElementById('valor-total').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
-        }
-
-        // ===== INICIALIZAÇÃO =====
-        function inicializar() {
-            console.log('🚀 Sistema Online-Only iniciando...');
-            
-            atualizarStatus('Aguardando configuração', 'error');
-            bloquearSistema();
-            
-            // Verificar se há configuração salva
-            const configSalva = localStorage.getItem('firebase-config');
-            if (configSalva) {
-                try {
-                    const config = JSON.parse(configSalva);
-                    document.getElementById('firebase-config').value = configSalva;
-                    inicializarFirebase(config);
-                    console.log('✅ Configuração encontrada, tentando conectar...');
-                } catch (error) {
-                    console.warn('Configuração salva inválida:', error);
-                    localStorage.removeItem('firebase-config');
-                    mostrarMensagem('⚠️ Configuração anterior inválida foi removida.', 'warning');
-                }
-            } else {
-                mostrarMensagem('⚠️ Configure o Firebase para usar o sistema.', 'warning');
+                salvarDados()
+                    .then(() => {
+                        mostrarMensagem('🗑️ Aposta excluída e sincronizada!', 'success');
+                    })
+                    .catch(() => {
+                        // Restaurar se não conseguiu salvar
+                        if (apostaOriginal) {
+                            apostas.push(apostaOriginal);
+                            renderizarApostas();
+                        }
+                    });
             }
-            
-            console.log('✅ Sistema carregado - aguardando Firebase');
         }
 
-        // ===== EVENTOS =====
-        document.addEventListener('DOMContentLoaded', inicializar);
-        
-        // Fallback para garantir inicialização
-        if (document.readyState === 'complete') {
-            inicializar();
-        }
-
-        // Prevenir uso sem Firebase
-        window.addEventListener('beforeunload', function() {
-            if (!firebaseConfigured) {
-                return 'Sistema requer configuração Firebase para funcionar.';
-            }
-        });
-    </script>
-</body>
-</html>
+        // =====
