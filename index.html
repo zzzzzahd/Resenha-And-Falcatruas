@@ -865,4 +865,34 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', app.firebase.initialize);
     </script>
+
+
+    
+    <!-- Botão de fallback para iniciar a música se o autoplay for bloqueado -->
+    <div id="music-btn-container" style="text-align:center; margin:20px; display:none;">
+        <button onclick="document.getElementById('bg-music').play(); this.parentElement.style.display='none';" 
+                style="padding:10px 20px; border:none; border-radius:8px; background:#e11d48; color:white; cursor:pointer;">
+            ▶️ Tocar Música
+        </button>
+    </div>
+
+    <!-- Música de fundo -->
+    <audio id="bg-music" autoplay loop>
+      <source src="bg-music.mp3" type="audio/mp3">
+      Seu navegador não suporta áudio em HTML5.
+    </audio>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const audio = document.getElementById("bg-music");
+        const btnContainer = document.getElementById("music-btn-container");
+
+        audio.play().catch(() => {
+          // Se o navegador bloquear, exibe o botão
+          btnContainer.style.display = "block";
+        });
+      });
+    </script>
+
+
 </body>
