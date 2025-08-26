@@ -146,8 +146,83 @@
   db.ref('apostas').on('value',snap=>{const data=snap.val();bets=data?Object.values(data):[];renderBets();if(document.getElementById('ranking-page').style.display==='block'){calculateRankings();}});
 
   function calculateRankings(){
-    const now=new Date();
-    const currentMonth=now.getMonth();
-    const currentYear=now.getFullYear();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-    const monthlyWinners={}, yearlyWinners
+    const monthlyWinners = {};
+    const yearlyWinners = {};
+    const monthlyLosers = {};
+    const yearlyLosers = {};
+
+    bets.forEach(bet => {
+        if (bet.status === 'encerrada' && bet.vencedor) {
+            const betDateParts = bet.data.split('/');
+            const betDate = new Date(`${betDateParts[2]}-${betDateParts[1]}-${betDateParts[0]}`);
+
+            if (betDate.getMonth() === currentMonth && betDate.getFullYear() === currentYear) {
+                monthlyWinners[bet.vencedor] = (monthlyWinners[bet.vencedor] || 0) + parseFloat(bet.val);
+                const perdedor = bet.vencedor === bet.ap1 ? bet.ap2 : bet.ap1;
+                monthlyLosers[perdedor] = (monthlyLosers[perdedor] || 0) + parseFloat(bet.val);
+            }
+            if (betDate.getFullYear() === currentYear) {
+                yearlyWinners[bet.vencedor] = (yearlyWinners[bet.vencedor] || 0) + parseFloat(bet.val);
+                const perdedor = bet.vencedor === bet.ap1 ? bet.ap2 : bet.ap1;
+                yearlyLosers[perdedor] = (yearlyLosers[perdedor] || 0) + parseFloat(bet.val);
+            }
+        }
+    });
+
+    renderRanking(monthlyWinners, 'monthly-winners', 'Vencedor do Mês');
+    renderRanking(yearlyWinners, 'yearly-winners', 'Vencedor do Ano');
+    renderRanking(monthlyLosers, 'monthly-losers', 'Perdedor do Mês');
+    renderRanking(yearlyLosers, 'yearly-losers', 'Perdedor do Ano');
+  }
+
+  function renderRanking(data, elementId, title) {
+    const element = document.getElementById(elementId);
+    element.innerHTML = '';
+    const sorted = Object.entries(data).sort(([, valA], [, valB]) => valB - valA).slice(0, 3);
+    
+    if (sorted.length === 0) {
+        element.innerHTML = '<p>Nenhum resultado.</p>';
+        return;
+    }
+
+    sorted.forEach(([apostador, valor], index) => {
+        const div = document.createElement('div');
+        div.className = 'ranking-item';
+        const positionClass = 'ranking-pos-' + (index + 1);
+        div.innerHTML = `
+            <div style="display: flex; align-items: center;">
+                <span class="ranking-pos ${positionClass}">${index + 1}</span>
+                <span>${apostador}</span>
+            </div>
+            <span>R$${valor.toFixed(2)}</span>
+        `;
+        element.appendChild(div);
+    });
+  }
+</script>
+
+<script>
+  // Script para música de fundo
+  const playPauseBtn = document.getElementById('play-pause-btn');
+  const bgMusic = document.getElementById('bg-music');
+  const musicTitle = document.getElementById('music-title');
+  const musicIcon = playPauseBtn.querySelector('i');
+
+  playPauseBtn.addEventListener('click', () => {
+    if (bgMusic.paused) {
+      bgMusic.play();
+      musicIcon.className = 'fas fa-pause';
+      musicTitle.textContent = 'Música Tocando';
+    } else {
+      bgMusic.pause();
+      musicIcon.className = 'fas fa-play';
+      musicTitle.textContent = 'Música Pausada';
+    }
+  });
+</script>
+</body>
+</html>
