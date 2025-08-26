@@ -96,6 +96,10 @@
             margin-left: 15px;
             animation: pulse 2s infinite;
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            /* Linhas adicionadas para a correção */
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: initial;
+            background-clip: initial;
         }
         
         .status-badge.offline {
@@ -836,6 +840,9 @@
                         <i class="fas fa-book"></i> Regras
                     </button>
                 </div>
+                <button id="music-toggle-btn" class="theme-toggle">
+                    <i class="fas fa-play"></i>
+                </button>
                 <button id="theme-toggle-btn" class="theme-toggle">
                     <i class="fas fa-moon"></i>
                 </button>
@@ -1418,6 +1425,24 @@
                 
                 // Event listeners
                 document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+                
+                // Novo Event Listener para o botão de música
+                const music = document.getElementById('bg-music');
+                const musicBtn = document.getElementById('music-toggle-btn');
+                const musicIcon = musicBtn.querySelector('i');
+
+                musicBtn.addEventListener('click', () => {
+                    if (music.paused) {
+                        music.play().then(() => {
+                            musicIcon.className = 'fas fa-pause';
+                        }).catch(error => {
+                            console.error('Erro ao tentar tocar a música:', error);
+                        });
+                    } else {
+                        music.pause();
+                        musicIcon.className = 'fas fa-play';
+                    }
+                });
                 
                 // Fechar modal ao clicar fora
                 window.addEventListener('click', (e) => {
