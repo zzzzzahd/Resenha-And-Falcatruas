@@ -585,7 +585,7 @@
 
         .ranking-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            box-shadow: 15px 40px rgba(0, 0, 0, 0.15);
         }
 
         .ranking-card h3 {
@@ -843,11 +843,15 @@
         </div>
     </div>
 
+    <audio id="bg-music" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
     <div class="container">
         <div class="message success" id="success-message"></div>
         <div class="message error" id="error-message"></div>
 
-        <!-- Página de Apostas -->
         <div id="apostas-page">
             <div class="status-box" id="system-status">
                 <h3>Sistema Carregado!</h3>
@@ -904,7 +908,6 @@
             </div>
         </div>
 
-        <!-- Página de Ranking -->
         <div id="ranking-page" class="hidden">
             <div class="form-container">
                 <h2><i class="fas fa-trophy"></i> Ranking dos Apostadores</h2>
@@ -929,7 +932,6 @@
             </div>
         </div>
 
-        <!-- Página de Regras -->
         <div id="regras-page" class="hidden">
             <div class="rules-container">
                 <h2 class="rules-title">
@@ -958,7 +960,6 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
     <div id="confirm-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="hideModal()">&times;</span>
@@ -975,7 +976,7 @@
     </div>
 
     <script>
-        // Application state - usando apenas variáveis em memória para segurança
+        // Application state
         const appState = {
             bets: [],
             currentFilter: 'todas',
@@ -983,7 +984,7 @@
             nextId: 1
         };
 
-        // Dados iniciais seguros (sem credenciais expostas)
+        // Dados iniciais (simulando um banco de dados local)
         const initialBets = [
             { 
                 id: 1, 
@@ -1053,7 +1054,7 @@
             }
         ];
 
-        // Funções utilitárias seguras
+        // Funções utilitárias
         function generateId() {
             return appState.nextId++;
         }
@@ -1062,46 +1063,16 @@
             return new Date().toLocaleDateString('pt-BR');
         }
 
-        function sanitizeText(text) {
-            const div = document.createElement('div');
+        function sanitizeInput(text) {
+            var div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        function validateAndFormatValue(valueString) {
-            if (!valueString || valueString.trim() === '') {
-                return { isValid: false, value: 0, formatted: '' };
-            }
-            
-            // Remove caracteres não numéricos, exceto vírgulas e pontos
-            const cleanValue = valueString.replace(/[^\d,\.]/g, '');
-            
-            // Verifica se restou algo válido
-            if (!cleanValue || cleanValue === ',' || cleanValue === '.') {
-                return { isValid: false, value: 0, formatted: '' };
-            }
-            
-            // Substitui vírgula por ponto para conversão
-            const numericValue = parseFloat(cleanValue.replace(',', '.'));
-            
-            // Valida se é um número válido e positivo
-            if (isNaN(numericValue) || numericValue <= 0) {
-                return { isValid: false, value: 0, formatted: '' };
-            }
-            
-            return { 
-                isValid: true, 
-                value: numericValue, 
-                formatted: numericValue.toFixed(2).replace('.', ',')
-            };
-        }
-
-        function validateValue(valueString) {
-            return validateAndFormatValue(valueString).isValid;
-        }
-
-        function parseValue(valueString) {
-            return validateAndFormatValue(valueString).value;
+        function parseValue(value) {
+            if (!value) return 0;
+            const cleaned = value.replace(/[^\d,]/g, '').replace(',', '.');
+            return parseFloat(cleaned) || 0;
         }
 
         function formatCurrency(value) {
@@ -1120,7 +1091,7 @@
             setTimeout(() => messageElement.style.display = 'none', 5000);
         }
 
-        function showPage(pageId, targetElement = null) {
+        function showPage(pageId, button) {
             // Esconder todas as páginas
             ['apostas', 'ranking', 'regras'].forEach(page => {
                 document.getElementById(`${page}-page`).classList.add('hidden');
@@ -1131,11 +1102,8 @@
             
             // Atualizar botões de navegação
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            
-            // Ativar botão correto - buscar por atributo data ou conteúdo
-            const activeBtn = targetElement || document.querySelector(`.nav-btn[onclick*="${pageId}"]`);
-            if (activeBtn) {
-                activeBtn.classList.add('active');
+            if (button) {
+                button.classList.add('active');
             }
 
             // Calcular rankings se necessário
@@ -1165,87 +1133,39 @@
             const statusIcon = bet.status === 'ativa' ? 'fa-play-circle' : 'fa-check-circle';
             const statusText = bet.status === 'ativa' ? 'Ativa' : 'Encerrada';
             
-            // Sanitizar todos os dados do usuário
-            const ap1Safe = sanitizeText(bet.ap1);
-            const ap2Safe = sanitizeText(bet.ap2);
-            const descSafe = sanitizeText(bet.desc);
-            const obsSafe = bet.obs ? sanitizeText(bet.obs) : '';
-            const vencedorSafe = bet.vencedor ? sanitizeText(bet.vencedor) : '';
-            const valueSafe = sanitizeText(bet.val);
-            const dataSafe = sanitizeText(bet.data);
+            // Usar textContent para segurança, evitando XSS
+            const ap1Safe = sanitizeInput(bet.ap1);
+            const ap2Safe = sanitizeInput(bet.ap2);
+            const descSafe = sanitizeInput(bet.desc);
+            const obsSafe = bet.obs ? sanitizeInput(bet.obs) : '';
+            const vencedorSafe = bet.vencedor ? sanitizeInput(bet.vencedor) : '';
+            const valueSafe = sanitizeInput(bet.val);
+            const dataSafe = sanitizeInput(bet.data);
             
-            // Criar elementos de forma segura
-            const statusDiv = document.createElement('div');
-            statusDiv.className = `bet-status status-${bet.status}`;
-            statusDiv.innerHTML = `<i class="fas ${statusIcon}"></i> ${statusText}`;
-            
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'bet-title';
-            titleDiv.innerHTML = `${ap1Safe} <span class="vs">vs</span> ${ap2Safe}`;
-            
-            const descDiv = document.createElement('div');
-            descDiv.className = 'bet-description';
-            descDiv.textContent = bet.desc;
-            
-            const valueDiv = document.createElement('div');
-            valueDiv.className = 'bet-value';
-            valueDiv.textContent = `💰 R$ ${bet.val}`;
-            
-            const dateDiv = document.createElement('div');
-            dateDiv.className = 'bet-date';
-            dateDiv.textContent = `📅 Criada em: ${bet.data}`;
-            
-            // Montar card
-            card.appendChild(statusDiv);
-            card.appendChild(titleDiv);
-            card.appendChild(descDiv);
-            card.appendChild(valueDiv);
-            
-            // Adicionar observações se existirem
-            if (bet.obs) {
-                const obsDiv = document.createElement('div');
-                obsDiv.className = 'bet-observations';
-                obsDiv.textContent = `📝 ${bet.obs}`;
-                card.appendChild(obsDiv);
-            }
-            
-            // Adicionar vencedor se existir
-            if (bet.vencedor) {
-                const winnerDiv = document.createElement('div');
-                winnerDiv.className = 'bet-winner';
-                winnerDiv.textContent = `🏆 Vencedor: ${bet.vencedor}`;
-                card.appendChild(winnerDiv);
-            }
-            
-            card.appendChild(dateDiv);
-            
-            // Criar ações de forma segura
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'bet-actions';
-            
-            if (bet.status === 'ativa') {
-                const btn1 = document.createElement('button');
-                btn1.className = 'action-btn btn-success';
-                btn1.textContent = `🏆 ${bet.ap1}`;
-                btn1.addEventListener('click', () => endBet(bet.id, bet.ap1));
-                
-                const btn2 = document.createElement('button');
-                btn2.className = 'action-btn btn-success';
-                btn2.textContent = `🏆 ${bet.ap2}`;
-                btn2.addEventListener('click', () => endBet(bet.id, bet.ap2));
-                
-                actionsDiv.appendChild(btn1);
-                actionsDiv.appendChild(btn2);
-            }
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'action-btn btn-danger';
-            deleteBtn.textContent = '🗑️ Excluir';
-            deleteBtn.addEventListener('click', () => deleteBet(bet.id));
-            
-            actionsDiv.appendChild(deleteBtn);
-            card.appendChild(actionsDiv);
-            
+            card.innerHTML = `
+                <div class="bet-status status-${bet.status}">
+                    <i class="fas ${statusIcon}"></i> ${statusText}
+                </div>
+                <div class="bet-title">${ap1Safe} <span class="vs">vs</span> ${ap2Safe}</div>
+                <div class="bet-description">${descSafe}</div>
+                <div class="bet-value">💰 R$ ${valueSafe}</div>
+                ${bet.obs ? `<div class="bet-observations">📝 ${obsSafe}</div>` : ''}
+                ${bet.vencedor ? `<div class="bet-winner">🏆 Vencedor: ${vencedorSafe}</div>` : ''}
+                <div class="bet-date">📅 Criada em: ${dataSafe}</div>
+                <div class="bet-actions">
+                    ${bet.status === 'ativa' ? `
+                        <button class="action-btn btn-success" onclick="endBet(${bet.id}, '${ap1Safe}')">
+                            🏆 ${ap1Safe}
+                        </button>
+                        <button class="action-btn btn-success" onclick="endBet(${bet.id}, '${ap2Safe}')">
+                            🏆 ${ap2Safe}
+                        </button>
+                    ` : ''}
+                    <button class="action-btn btn-danger" onclick="deleteBet(${bet.id})">
+                        🗑️ Excluir
+                    </button>
+                </div>
+            `;
             return card;
         }
 
@@ -1307,75 +1227,24 @@
 
         // Funções principais de gestão de apostas
         function createBet() {
-            const inputs = {
-                bettor1: document.getElementById('bettor1'),
-                bettor2: document.getElementById('bettor2'),
-                description: document.getElementById('description'),
-                value: document.getElementById('value'),
-                observations: document.getElementById('observations')
-            };
+            const bettor1 = document.getElementById('bettor1');
+            const bettor2 = document.getElementById('bettor2');
+            const description = document.getElementById('description');
+            const value = document.getElementById('value');
+            const observations = document.getElementById('observations');
             
-            // Remover classes de erro existentes e adicionar listeners para limpeza automática
-            Object.values(inputs).forEach(input => {
-                input.classList.remove('error');
-                
-                // Adicionar listener para remover erro ao focar/digitar
-                const clearError = () => input.classList.remove('error');
-                input.removeEventListener('focus', clearError); // Remove listener anterior se existir
-                input.removeEventListener('input', clearError);
-                input.addEventListener('focus', clearError);
-                input.addEventListener('input', clearError);
-            });
-            
-            const values = {
-                bettor1: inputs.bettor1.value.trim(),
-                bettor2: inputs.bettor2.value.trim(),
-                description: inputs.description.value.trim(),
-                value: inputs.value.value.trim(),
-                observations: inputs.observations.value.trim()
-            };
-            
-            // Validação aprimorada
-            let hasError = false;
-            
-            if (!values.bettor1) {
-                inputs.bettor1.classList.add('error');
-                hasError = true;
-            }
-            
-            if (!values.bettor2) {
-                inputs.bettor2.classList.add('error');
-                hasError = true;
-            }
-            
-            if (!values.description) {
-                inputs.description.classList.add('error');
-                hasError = true;
-            }
-            
-            // Validação melhorada de valor
-            const valueValidation = validateAndFormatValue(values.value);
-            if (!valueValidation.isValid) {
-                inputs.value.classList.add('error');
-                hasError = true;
-            }
-            
-            if (hasError) {
-                const errorMsg = !valueValidation.isValid && values.value ? 
-                    'Preencha todos os campos obrigatórios (*) corretamente! O valor deve ser um número positivo.' :
-                    'Preencha todos os campos obrigatórios (*) corretamente!';
-                showMessage(errorMsg, 'error');
+            if (!bettor1.value || !bettor2.value || !description.value || !value.value) {
+                showMessage('Por favor, preencha todos os campos obrigatórios (*)', 'error');
                 return;
             }
             
-            // Criar nova aposta
             const newBet = {
                 id: generateId(),
-                ap1: values.bettor1,
-                ap2: values.bettor2,
-                desc: values.description,
-                val: valueValidation.formatted,
-                obs: values.observations,
+                ap1: bettor1.value,
+                ap2: bettor2.value,
+                desc: description.value,
+                val: value.value,
+                obs: observations.value,
                 status: 'ativa',
                 data: getCurrentDate(),
                 vencedor: null
@@ -1385,7 +1254,11 @@
             appState.bets.unshift(newBet);
             
             // Limpar formulário
-            Object.values(inputs).forEach(input => input.value = '');
+            bettor1.value = '';
+            bettor2.value = '';
+            description.value = '';
+            value.value = '';
+            observations.value = '';
             
             renderBets();
             showMessage('Aposta criada com sucesso!', 'success');
@@ -1450,7 +1323,8 @@
                     if (betDateParts.length === 3) {
                         const betDate = new Date(`${betDateParts[2]}-${betDateParts[1]}-${betDateParts[0]}`);
                         const betValue = parseValue(bet.val);
-                        const loser = bet.vencedor === bet.ap1 ? bet.ap2 : bet.ap1;
+                        
+                        const loser = bet.ap1 === bet.vencedor ? bet.ap2 : bet.ap1;
 
                         // Rankings mensais
                         if (betDate.getMonth() === currentMonth && betDate.getFullYear() === currentYear) {
@@ -1490,26 +1364,13 @@
                 div.className = 'ranking-item';
                 const positionClass = index < 3 ? `ranking-pos-${index + 1}` : '';
                 
-                // Criar elementos de forma segura
-                const playerDiv = document.createElement('div');
-                playerDiv.className = 'ranking-player';
-                
-                const posDiv = document.createElement('div');
-                posDiv.className = `ranking-pos ${positionClass}`;
-                posDiv.textContent = index + 1;
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'ranking-name';
-                nameSpan.textContent = apostador; // textContent é seguro
-                
-                const valueSpan = document.createElement('span');
-                valueSpan.className = 'ranking-value';
-                valueSpan.textContent = `R$ ${formatCurrency(valor)}`;
-                
-                playerDiv.appendChild(posDiv);
-                playerDiv.appendChild(nameSpan);
-                div.appendChild(playerDiv);
-                div.appendChild(valueSpan);
+                div.innerHTML = `
+                    <div class="ranking-player">
+                        <div class="ranking-pos ${positionClass}">${index + 1}</div>
+                        <span class="ranking-name">${sanitizeInput(apostador)}</span>
+                    </div>
+                    <span class="ranking-value">R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                `;
                 element.appendChild(div);
             });
         }
@@ -1550,7 +1411,7 @@
                 // Aplicar tema salvo
                 document.body.className = appState.currentTheme + '-mode';
                 const themeIcon = appState.currentTheme === 'dark' ? 'fa-sun' : 'fa-moon';
-                document.querySelector('#theme-toggle-btn i').className = `fas ${themeIcon}`;
+                document.querySelector('#theme-toggle-btn i').className = `fas ${themeIcon}`
                 
                 // Renderizar interface
                 renderBets();
